@@ -7,23 +7,23 @@ const SensorData = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("https://weather-alert-system-sand.vercel.app/api/data", {
-      method: "GET",
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch data");
-        return res.json();
-      })
-      .then((data) => {
-        setData(data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setIsLoading(false);
-      });
-  }, []);
+ useEffect(() => {
+   fetch("https://weather-alert-system-sand.vercel.app/api/data", {
+     method: "GET",
+   })
+     .then((res) => {
+       if (!res.ok) throw new Error("Failed to fetch data");
+       return res.json();
+     })
+     .then((data) => {
+       setData(data);
+       setIsLoading(false);
+     })
+     .catch((err) => {
+       setError(err.message);
+       setIsLoading(false);
+     });
+ }, []);
 
   if (isLoading) {
     return (
