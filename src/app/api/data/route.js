@@ -6,7 +6,8 @@ const filePath = path.join(process.cwd(), "src", "sensorData.json");
 
 export async function POST(request) {
   try {
-    const body = await request.json();
+    const bodyText = await request.text(); // 🔁 read raw text
+    const body = JSON.parse(bodyText); // 🔁 manually parse JSON
     const { temperature, humidity, light, soilMoisture } = body;
 
     latestSensorData = { temperature, humidity, light, soilMoisture };
