@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`flex flex-col min-h-screen items-center justify-center antialiased`}
+        className={`flex flex-col min-h-screen p-4 items-center justify-center antialiased`}
       >
         {children}
       </body>
