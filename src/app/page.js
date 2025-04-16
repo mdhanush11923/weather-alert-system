@@ -1,30 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
 
-export default function Page() {
-  const [count, setCount] = useState(null);
+export default function Counter() {
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const fetchCount = async () => {
-      try {
-        const res = await fetch("/api/counter");
-        const data = await res.json();
-        setCount(data.count);
-      } catch (err) {
-        console.error("Failed to fetch count:", err);
-      }
-    };
+    const countRef = ref(db, "/count");
+    const unsubscribe = onValue(countRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val !== null) setCount(val);
+    });
 
-    fetchCount();
-    const interval = setInterval(fetchCount, 5000);
-    return () => clearInterval(interval);
+    return () => unsubscribe();
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">ESP8266 Counter</h1>
-      <p className="text-xl">Count: {count !== null ? count : "Loading..."}</p>
+    <div className="text-center mt-10 text-3xl">
+      📈 Count: <strong>{count}</strong>
     </div>
   );
 }
