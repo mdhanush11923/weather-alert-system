@@ -1,16 +1,15 @@
-let latestCount = 0;
+// app/api/counter/route.ts
+import { NextResponse } from "next/server";
 
-export default function handler(req, res) {
-  if (req.method === "POST") {
-    const { count } = req.body;
-    if (typeof count === "number") {
-      latestCount = count;
-      console.log("Received count:", count);
-      return res.status(200).json({ ok: true, latestCount });
-    }
-    return res.status(400).json({ error: "Invalid payload" });
-  }
+export async function POST(req) {
+  const body = await req.json();
+  const { count } = body;
 
-  // For GET requests, return the current count
-  res.status(200).json({ latestCount });
+  console.log("✅ Received count:", count);
+
+  return NextResponse.json({ message: "Count received", count });
+}
+
+export function GET() {
+  return NextResponse.json({ message: "Send a POST request with count." });
 }
