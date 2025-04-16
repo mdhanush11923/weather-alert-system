@@ -1,15 +1,31 @@
-// app/api/counter/route.ts
-import { NextResponse } from "next/server";
+let latestCount = 0;
 
-export async function POST(req) {
-  const body = await req.json();
-  const { count } = body;
+export async function POST(request) {
+  try {
+    const body = await request.json();
+    const { count } = body;
 
-  console.log("✅ Received count:", count);
+    if (typeof count !== "number") {
+      return new Response(JSON.stringify({ error: "Invalid count" }), {
+        status: 400,
+      });
+    }
 
-  return NextResponse.json({ message: "Count received", count });
+    latestCount = count;
+    return new Response(JSON.stringify({ message: "Count received", count }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: "Error parsing JSON" }), {
+      status: 400,
+    });
+  }
 }
 
-export function GET() {
-  return NextResponse.json({ message: "Send a POST request with count." });
+export async function GET() {
+  return new Response(JSON.stringify({ count: latestCount }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
