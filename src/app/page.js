@@ -7,13 +7,14 @@ import {
   Sprout,
   Wind,
   CloudRain,
+  CloudSun,
 } from "lucide-react";
 
 const colorClasses = {
-  red: "bg-red-800/20 text-red-200",
-  sky: "bg-sky-800/20 text-sky-200",
-  amber: "bg-amber-800/20 text-amber-200",
-  lime: "bg-lime-800/20 text-lime-200",
+  red: "bg-red-500/20 text-red-200",
+  sky: "bg-sky-500/20 text-sky-200",
+  amber: "bg-amber-500/20 text-amber-200",
+  lime: "bg-lime-500/20 text-lime-200",
 };
 
 export default function WeatherPage() {
@@ -56,8 +57,18 @@ export default function WeatherPage() {
       }
     };
 
+    // Fetch initially
     fetchWeather();
     fetchSensorData();
+
+    // Set interval for auto refresh every 10 seconds
+    const interval = setInterval(() => {
+      fetchWeather();
+      fetchSensorData();
+    }, 10000); // 10000ms = 10s
+
+    // Clear interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const visibleHours = showAll ? 24 : 3;
@@ -87,11 +98,27 @@ export default function WeatherPage() {
     return alerts;
   };
 
+  // console.log("Sensor Data:", sensor);
+  // console.log("Weather Precipitation First Hour:", weather?.precipitation[0]);
+  // console.log("Alerts:", checkAlerts());
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-12">
-        <div className="bg-zinc-900 border-2 border-zinc-800 rounded-2xl shadow-2xl py-10 px-6 sm:px-10">
-          <h2 className="text-3xl font-bold text-center mb-8">
+        <div className="flex items-center justify-center gap-3 my-6">
+          <CloudSun className="w-8 h-8 text-blue-500" />
+          <h2 className="text-2xl sm:text-4xl font-bold">
+            Weather Alert System
+          </h2>
+        </div>
+        <div className="flex items-center px-5 mt-12">
+          <div className="w-4 h-4 rounded-full border-2 border-gray-700 mx-4"></div>
+          <hr className="flex-grow border-t-2 border-gray-700" />
+          <div className="w-4 h-4 rounded-full border-2 border-gray-700 mx-4"></div>
+        </div>
+        <div className="pb-10 rounded-2xl shadow-2xl px-6 sm:px-10">
+          <h2 className="text-xl sm:text-3xl font-bold mb-8">
             🌿 Live Sensor Data
           </h2>
           {sensorLoading ? (
@@ -116,6 +143,7 @@ export default function WeatherPage() {
                 value={sensor.humidity}
                 description="Percentage of moisture in the air. High humidity may cause discomfort, while low humidity may affect plant growth."
               />
+
               <InfoCard
                 Icon={Sun}
                 title="Light"
@@ -133,9 +161,9 @@ export default function WeatherPage() {
             </div>
           )}
         </div>
-        <div className="bg-zinc-900 border-2 border-zinc-800 rounded-2xl shadow-2xl py-6 px-6 sm:px-10">
-          <h2 className="text-3xl font-bold text-center mb-6">
-            Plant Care Alerts
+        <div className=" rounded-2xl shadow-2xl py-6 px-6 sm:px-10">
+          <h2 className="text-xl sm:text-3xl font-bold mb-6">
+            Plant Health Status
           </h2>
           {sensorLoading ? (
             <p className="text-center text-yellow-400">
@@ -145,17 +173,29 @@ export default function WeatherPage() {
             <p className="text-center text-red-500">❌ Error: {sensorError}</p>
           ) : (
             <div className="space-y-4">
-              {checkAlerts().length > 0 ? (
+              {sensorLoading ? (
+                <p className="text-center text-yellow-400">
+                  ⏳ Loading sensor data...
+                </p>
+              ) : sensorError ? (
+                <p className="text-center text-red-500">
+                  ❌ Error: {sensorError}
+                </p>
+              ) : sensor?.message === "No sensor data received yet" ? (
+                <div className="bg-yellow-900/20 text-yellow-300 p-4 rounded-lg text-center">
+                  ⚠️ No sensor data received yet.
+                </div>
+              ) : checkAlerts().length > 0 ? (
                 checkAlerts().map((alert, index) => (
                   <div
                     key={index}
-                    className="bg-red-950 text-white p-4 rounded-lg"
+                    className="bg-red-950/80 text-white p-4 rounded-lg"
                   >
                     {alert}
                   </div>
                 ))
               ) : (
-                <div className="bg-green-950 text-white p-4 rounded-lg">
+                <div className="bg-green-950/20 text-white p-4 rounded-lg">
                   ✅ Your plant is doing great!
                 </div>
               )}
@@ -163,8 +203,8 @@ export default function WeatherPage() {
           )}
         </div>
 
-        <div>
-          <h2 className="text-3xl font-bold text-center mb-6">
+        <div className=" rounded-2xl shadow-2xl py-6 px-6 sm:px-10">
+          <h2 className="text-xl sm:text-3xl font-bold mb-6">
             ⛅ Weather Forecast
           </h2>
           {loading ? (
@@ -204,7 +244,7 @@ export default function WeatherPage() {
               <div className="text-center mt-6">
                 <button
                   onClick={() => setShowAll(!showAll)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 rounded-lg"
+                  className="px-4 w-full py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 cursor-pointer rounded-lg"
                 >
                   {showAll ? "Show Less" : "Show More"}
                 </button>
@@ -234,7 +274,9 @@ const InfoCard = ({ Icon, title, color, value, description }) => {
           <span className="text-2xl font-semibold">{value}</span>
         </div>
       </div>
-      <p className="text-sm text-zinc-300 mt-2">{description}</p>
+      <p className="text-sm text-zinc-300 mt-2 leading-relaxed">
+        {description}
+      </p>
     </div>
   );
 };
