@@ -138,7 +138,7 @@ const alerts = getAlerts(sensor, weather);
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-800 to-teal-900 text-white px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-12">
         <div className="flex items-center justify-center gap-3 my-6">
           <CloudSun className="w-8 h-8 text-blue-500" />
