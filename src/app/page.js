@@ -212,15 +212,13 @@ const alerts = getAlerts(sensor, weather);
                   ⏳ Loading sensor data...
                 </p>
               ) : sensorError ? (
-                <p className=" text-red-500">
-                  ❌ Error: {sensorError}
-                </p>
+                <p className=" text-red-500">❌ Error: {sensorError}</p>
               ) : sensor?.message === "No sensor data received yet" ? (
                 <div className="bg-yellow-900/20 text-yellow-300 p-4 rounded-lg">
                   ⚠️ No sensor data received yet.
                 </div>
               ) : alerts.length > 0 ? (
-                alerts().map((alert, index) => (
+                alerts.map((alert, index) => (
                   <div
                     key={index}
                     className="bg-red-950/80 text-white p-4 rounded-lg"
@@ -280,7 +278,7 @@ const alerts = getAlerts(sensor, weather);
                   onClick={() => setShowAll(!showAll)}
                   className="px-4 w-full py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 cursor-pointer rounded-lg"
                 >
-                  {showAll ? "Show Less" : "Show More"}
+                  {showAll ? "Show Less" : "Show 24 Hours"}
                 </button>
               </div>
             </>
