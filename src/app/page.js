@@ -96,14 +96,14 @@ const getAlerts = (sensor, weather) => {
       message: "🚫 The soil is too wet. Avoid overwatering your plant.",
     },
     {
-      condition: sensor?.light < 200,
+      condition: sensor?.light === 0,
       message:
-        "🌑 Light is too low. Consider moving your plant to a brighter area.",
+        "🌑 No light detected. Consider moving your plant to a brighter area.",
     },
     {
-      condition: sensor?.light > 900,
+      condition: sensor?.light === 1,
       message:
-        "🔆 Light is very strong. Ensure your plant isn’t getting scorched.",
+        "🔆 Light detected. If it's too intense, ensure your plant isn't getting scorched.",
     },
   ];
 
