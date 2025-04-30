@@ -9,13 +9,9 @@ import {
   CloudRain,
   CloudSun,
 } from "lucide-react";
-
-const colorClasses = {
-  red: "bg-red-500/20 text-red-200",
-  sky: "bg-sky-500/20 text-sky-200",
-  amber: "bg-amber-500/20 text-amber-200",
-  lime: "bg-lime-500/20 text-lime-200",
-};
+import InfoCard from "@/components/InfoCard";
+import { getAlerts } from "@/utils/getAlerts";
+import { getHumidityDescription, getLightDescription, getSoilMoistureDescription, getTemperatureDescription } from "@/utils/descriptions";
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState(null);
@@ -73,69 +69,11 @@ export default function WeatherPage() {
 
   const visibleHours = showAll ? 24 : 3;
 
-const getAlerts = (sensor, weather) => {
-  const alerts = [];
-
-  const sensorAlerts = [
-    {
-      condition: sensor?.temperature > 30,
-      message:
-        "🔥 It's getting too hot for your plant! Consider watering it to avoid heat stress.",
-    },
-    {
-      condition: sensor?.humidity < 40,
-      message:
-        "🌬️ The air is dry. You might want to increase humidity or water your plant.",
-    },
-    {
-      condition: sensor?.soilMoisture < 40,
-      message: "💧 The soil is too dry. It's time to water your plant!",
-    },
-    {
-      condition: sensor?.soilMoisture > 80,
-      message: "🚫 The soil is too wet. Avoid overwatering your plant.",
-    },
-    {
-      condition: sensor?.light === 0,
-      message:
-        "🌑 No light detected. Consider moving your plant to a brighter area.",
-    },
-    {
-      condition: sensor?.light === 1,
-      message:
-        "🔆 Light detected. If it's too intense, ensure your plant isn't getting scorched.",
-    },
-  ];
-
-  const weatherAlerts = [
-    {
-      condition: weather?.precipitation?.[0] > 0,
-      message: "☔ It’s going to rain soon. No need to water your plant today!",
-    },
-    {
-      condition: weather?.temperature_2m?.[0] < 10,
-      message:
-        "❄️ It's getting cold. Consider protecting your plant from frost.",
-    },
-    {
-      condition: weather?.windspeed_10m?.[0] > 30,
-      message: "💨 High winds expected. Move delicate plants to shelter.",
-    },
-  ];
-
-  [...sensorAlerts, ...weatherAlerts].forEach((alert) => {
-    if (alert.condition) alerts.push(alert.message);
-  });
-
-  return alerts;
-};
-
-const alerts = getAlerts(sensor, weather);
+  const alerts = getAlerts(sensor, weather);
 
   // console.log("Sensor Data:", sensor);
   // console.log("Weather Precipitation First Hour:", weather?.precipitation[0]);
   // console.log("Alerts:", checkAlerts());
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-10">
@@ -151,64 +89,68 @@ const alerts = getAlerts(sensor, weather);
           <hr className="flex-grow border-t-2 border-gray-700" />
           <div className="w-4 h-4 rounded-full border-2 border-gray-700 mx-4"></div>
         </div>
-        <div className="pb-10 rounded-2xl shadow-2xl px-6 sm:px-10">
-          <h2 className="text-xl sm:text-3xl font-bold mb-8">
-            🌿 Live Sensor Data
-          </h2>
-          {sensorLoading ? (
-            <p className="text-center text-yellow-400">
-              ⏳ Loading sensor data...
-            </p>
-          ) : sensorError ? (
-            <p className="text-center text-red-500">❌ Error: {sensorError}</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <InfoCard
-                Icon={Thermometer}
-                title="Temperature"
-                color="red"
-                value={sensor.temperature}
-                description="Current air temperature. High temperatures may indicate heat stress, while low temperatures may signal frost risk."
-              />
-              <InfoCard
-                Icon={Droplets}
-                title="Humidity"
-                color="sky"
-                value={sensor.humidity}
-                description="Percentage of moisture in the air. High humidity may cause discomfort, while low humidity may affect plant growth."
-              />
+        {sensor != null && sensor.temperature != null && (
+          <div className="pb-10 rounded-2xl shadow-2xl px-6 sm:px-10">
+            <h2 className="text-xl sm:text-3xl font-bold mb-8">
+              🌿 Live Sensor Data
+            </h2>
+            {sensorLoading ? (
+              <p className="text-yellow-400">
+                ⏳ Loading sensor data...
+              </p>
+            ) : sensorError ? (
+              <p className="text-red-500">
+                ❌ Error: {sensorError}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <InfoCard
+                  Icon={Thermometer}
+                  title="Temperature"
+                  color="red"
+                  value={sensor.temperature}
+                  description={getTemperatureDescription(sensor.temperature)}
+                />
+                <InfoCard
+                  Icon={Droplets}
+                  title="Humidity"
+                  color="sky"
+                  value={sensor.humidity}
+                  description={getHumidityDescription(sensor.humidity)}
+                />
+                <InfoCard
+                  Icon={Sun}
+                  title="Light"
+                  color="amber"
+                  value={sensor.light}
+                  description={getLightDescription(sensor.light)}
+                />
+                <InfoCard
+                  Icon={Sprout}
+                  title="Soil Moisture"
+                  color="lime"
+                  value={sensor.soilMoisture}
+                  description={getSoilMoistureDescription(sensor.soilMoisture)}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
-              <InfoCard
-                Icon={Sun}
-                title="Light"
-                color="amber"
-                value={sensor.light}
-                description="Light intensity. Plants need sufficient light for photosynthesis; low light can hinder growth."
-              />
-              <InfoCard
-                Icon={Sprout}
-                title="Soil Moisture"
-                color="lime"
-                value={sensor.soilMoisture}
-                description="Indicates how much water is in the soil. Low moisture means plants may need watering, and high moisture could indicate overwatering."
-              />
-            </div>
-          )}
-        </div>
-        <div className=" rounded-2xl shadow-2xl py-6 px-6 sm:px-10">
+        <div className="shadow-xl rounded-2xl py-6 px-6 sm:px-10">
           <h2 className="text-xl sm:text-3xl font-bold mb-6">
             Plant Health Status
           </h2>
           {sensorLoading ? (
-            <p className="text-center text-yellow-400">
+            <p className="text-yellow-400">
               ⏳ Loading sensor data...
             </p>
           ) : sensorError ? (
-            <p className="text-center text-red-500">❌ Error: {sensorError}</p>
+            <p className="text-red-500">❌ Error: {sensorError}</p>
           ) : (
             <div className="space-y-4">
               {sensorLoading ? (
-                <p className="text-center text-yellow-400">
+                <p className="text-yellow-400">
                   ⏳ Loading sensor data...
                 </p>
               ) : sensorError ? (
@@ -235,12 +177,12 @@ const alerts = getAlerts(sensor, weather);
           )}
         </div>
 
-        <div className=" rounded-2xl shadow-2xl py-6 px-6 sm:px-10">
+        <div className="shadow-xl rounded-2xl py-6 px-6 sm:px-10">
           <h2 className="text-xl sm:text-3xl font-bold mb-6">
             ⛅ Weather Forecast
           </h2>
           {loading ? (
-            <p className="text-center text-yellow-400">
+            <p className="text-yellow-400">
               ⏳ Loading weather forecast...
             </p>
           ) : weather ? (
@@ -292,23 +234,3 @@ const alerts = getAlerts(sensor, weather);
     </div>
   );
 }
-
-const InfoCard = ({ Icon, title, color, value, description }) => {
-  const colorClass = colorClasses[color] || "bg-gray-800 text-white";
-  return (
-    <div className={`${colorClass} p-6 rounded-xl flex flex-col gap-3`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Icon className="w-6 h-6" />
-          <span className="text-lg font-medium">{title}</span>
-        </div>
-        <div>
-          <span className="text-2xl font-semibold">{value}</span>
-        </div>
-      </div>
-      <p className="text-sm text-zinc-300 mt-2 leading-relaxed">
-        {description}
-      </p>
-    </div>
-  );
-};
