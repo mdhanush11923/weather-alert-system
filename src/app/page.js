@@ -11,7 +11,13 @@ import {
 } from "lucide-react";
 import InfoCard from "@/components/InfoCard";
 import { getAlerts } from "@/utils/getAlerts";
-import { getHumidityDescription, getLightDescription, getSoilMoistureDescription, getTemperatureDescription } from "@/utils/descriptions";
+import {
+  getHumidityDescription,
+  getLightDescription,
+  getSoilMoistureDescription,
+  getTemperatureDescription,
+} from "@/utils/descriptions";
+import { toast } from "sonner";
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState(null);
@@ -71,9 +77,34 @@ export default function WeatherPage() {
 
   const alerts = getAlerts(sensor, weather);
 
-  // console.log("Sensor Data:", sensor);
-  // console.log("Weather Precipitation First Hour:", weather?.precipitation[0]);
-  // console.log("Alerts:", checkAlerts());
+  useEffect(() => {
+    // Don't run this effect until sensor loading is complete
+    if (sensorLoading) return;
+
+    // If there's a fetch error
+    if (sensorError) {
+      toast.error(`Sensor Error: ${sensorError}`);
+      return;
+    }
+
+    // If the backend returns a known 'no data yet' message
+    if (sensor?.message === "No sensor data received yet") {
+      toast.warning("⚠️ No sensor data received yet.");
+      return;
+    }
+
+    // If sensor data is valid and alerts exist
+    if (sensor && alerts.length > 0) {
+      alerts.forEach((alert) => {
+        toast.error(`⚠️ ${alert}`);
+      });
+    }
+
+    // If everything is fine and no alerts
+    if (sensor && alerts.length === 0) {
+      toast.success("✅ Your plant is doing great!");
+    }
+  }, [sensorLoading, sensor, alerts, sensorError]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-10">
@@ -95,13 +126,9 @@ export default function WeatherPage() {
               🌿 Live Sensor Data
             </h2>
             {sensorLoading ? (
-              <p className="text-yellow-400">
-                ⏳ Loading sensor data...
-              </p>
+              <p className="text-yellow-400">⏳ Loading sensor data...</p>
             ) : sensorError ? (
-              <p className="text-red-500">
-                ❌ Error: {sensorError}
-              </p>
+              <p className="text-red-500">❌ Error: {sensorError}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <InfoCard
@@ -142,17 +169,13 @@ export default function WeatherPage() {
             Plant Health Status
           </h2>
           {sensorLoading ? (
-            <p className="text-yellow-400">
-              ⏳ Loading sensor data...
-            </p>
+            <p className="text-yellow-400">⏳ Loading sensor data...</p>
           ) : sensorError ? (
             <p className="text-red-500">❌ Error: {sensorError}</p>
           ) : (
             <div className="space-y-4">
               {sensorLoading ? (
-                <p className="text-yellow-400">
-                  ⏳ Loading sensor data...
-                </p>
+                <p className="text-yellow-400">⏳ Loading sensor data...</p>
               ) : sensorError ? (
                 <p className=" text-red-500">❌ Error: {sensorError}</p>
               ) : sensor?.message === "No sensor data received yet" ? (
@@ -182,9 +205,7 @@ export default function WeatherPage() {
             ⛅ Weather Forecast
           </h2>
           {loading ? (
-            <p className="text-yellow-400">
-              ⏳ Loading weather forecast...
-            </p>
+            <p className="text-yellow-400">⏳ Loading weather forecast...</p>
           ) : weather ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

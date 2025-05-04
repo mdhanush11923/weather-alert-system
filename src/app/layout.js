@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Poppins } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -15,10 +16,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`min-h-screen antialiased ${poppins.className}`}
-      >
+      <body className={`min-h-screen antialiased ${poppins.className}`}>
         {children}
+        <Toaster duration={3000} richColors />
       </body>
     </html>
   );
