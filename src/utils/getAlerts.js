@@ -1,34 +1,35 @@
 export const getAlerts = (sensor, weather) => {
+  const soilMoisturePercent = Math.round((sensor?.soilMoisture / 1023) * 100);
   const alerts = [];
 
   const sensorAlerts = [
     {
-      condition: sensor?.temperature > 30,
+      condition: sensor?.temperature > 35,
       message:
-        "🔥 It's getting too hot for your plant! Consider watering it to avoid heat stress.",
+        "🔥 It's getting too hot for your plant! Consider moving it to shade or watering it.",
     },
     {
-      condition: sensor?.humidity < 40,
+      condition: sensor?.humidity !== null && sensor?.humidity < 30,
       message:
-        "🌬️ The air is dry. You might want to increase humidity or water your plant.",
+        "🌬️ The air is quite dry. You might want to increase humidity or mist your plant.",
     },
     {
-      condition: sensor?.soilMoisture < 40,
+      condition: soilMoisturePercent < 25,
       message: "💧 The soil is too dry. It's time to water your plant!",
     },
     {
-      condition: sensor?.soilMoisture > 80,
+      condition: soilMoisturePercent > 85,
       message: "🚫 The soil is too wet. Avoid overwatering your plant.",
     },
     {
       condition: sensor?.light === 0,
       message:
-        "🌑 No light detected. Consider moving your plant to a brighter area.",
+        "🌑 No light detected. Move your plant to a brighter area if it's daytime.",
     },
     {
-      condition: sensor?.light === 1,
+      condition: sensor?.light === 1 && sensor?.temperature > 37,
       message:
-        "🔆 Light detected. If it's too intense, ensure your plant isn't getting scorched.",
+        "🔆 Bright light with high heat detected. Make sure your plant isn't overheating.",
     },
   ];
 
