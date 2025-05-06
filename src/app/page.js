@@ -79,38 +79,60 @@ export default function WeatherPage() {
 
   const alerts = getAlerts(sensor, weather);
 
-  useEffect(() => {
-    // Don't run this effect until sensor loading is complete
-    if (sensorLoading) return;
+useEffect(() => {
+  if (sensorLoading) return;
 
-    // Prevent repeat toasts for the same state
-    if (hasShownToastRef.current) return;
-
-    if (sensorError) {
-      toast.error(`Sensor Error: ${sensorError}`);
-      hasShownToastRef.current = true;
-      return;
+  const showBrowserNotification = (title, body) => {
+    if (
+      typeof Notification !== "undefined" &&
+      Notification.permission === "granted"
+    ) {
+      new Notification(title, { body });
     }
+  };
 
-    if (sensor?.message === "No sensor data received yet") {
-      toast.warning("No sensor data received yet.");
-      hasShownToastRef.current = true;
-      return;
-    }
+  const cooldown = 60 * 1000; // 60 seconds
+  const lastAlertData = JSON.parse(
+    localStorage.getItem("lastAlertData") || "{}"
+  );
+  const now = Date.now();
 
-    if (sensor && alerts.length > 0) {
-      alerts.forEach((alert) => {
-        toast.error(`${alert}`);
-      });
-      hasShownToastRef.current = true;
-      return;
-    }
+  const createHash = (arr) => JSON.stringify(arr.sort());
 
-    if (sensor && alerts.length === 0) {
-      toast.success("Your plant is doing great!");
-      hasShownToastRef.current = true;
-    }
-  }, [sensorLoading, sensor, alerts, sensorError]);
+  const currentHash = createHash(alerts);
+
+  // Already shown or within cooldown
+  if (
+    hasShownToastRef.current ||
+    (lastAlertData.hash === currentHash &&
+      now - lastAlertData.timestamp < cooldown)
+  ) {
+    return;
+  }
+
+  if (sensorError) {
+    toast.error(`Sensor Error: ${sensorError}`);
+    showBrowserNotification("Sensor Error", sensorError);
+  } else if (sensor?.message === "No sensor data received yet") {
+    toast.warning("No sensor data received yet.");
+    showBrowserNotification("Sensor Status", "No sensor data received yet.");
+  } else if (alerts.length > 0) {
+    alerts.forEach((alert) => {
+      toast.error(alert);
+      showBrowserNotification("⚠️ Alert", alert);
+    });
+  } else {
+    toast.success("Your plant is doing great!");
+    showBrowserNotification("🌿 Status", "Your plant is doing great!");
+  }
+
+  // Save last shown hash and time
+  localStorage.setItem(
+    "lastAlertData",
+    JSON.stringify({ hash: currentHash, timestamp: now })
+  );
+  hasShownToastRef.current = true;
+}, [sensorLoading, sensor, alerts, sensorError]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-10">
