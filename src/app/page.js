@@ -78,15 +78,19 @@ export default function WeatherPage() {
   const visibleHours = showAll ? 24 : 3;
 
   const alerts = getAlerts(sensor, weather);
-
 useEffect(() => {
   if (sensorLoading) return;
 
   const showBrowserNotification = (title, body) => {
-    if (
-      typeof Notification !== "undefined" &&
-      Notification.permission === "granted"
-    ) {
+    if (typeof Notification === "undefined") return;
+
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          new Notification(title, { body });
+        }
+      });
+    } else if (Notification.permission === "granted") {
       new Notification(title, { body });
     }
   };
@@ -96,19 +100,14 @@ useEffect(() => {
     localStorage.getItem("lastAlertData") || "{}"
   );
   const now = Date.now();
-
-  const createHash = (arr) => JSON.stringify(arr.sort());
-
+  const createHash = (arr) => JSON.stringify([...arr].sort());
   const currentHash = createHash(alerts);
 
-  // Already shown or within cooldown
-  if (
-    hasShownToastRef.current ||
-    (lastAlertData.hash === currentHash &&
-      now - lastAlertData.timestamp < cooldown)
-  ) {
-    return;
-  }
+  const isInCooldown =
+    lastAlertData.hash === currentHash &&
+    now - lastAlertData.timestamp < cooldown;
+
+  if (hasShownToastRef.current || isInCooldown) return;
 
   if (sensorError) {
     toast.error(`Sensor Error: ${sensorError}`);
@@ -126,7 +125,6 @@ useEffect(() => {
     showBrowserNotification("🌿 Status", "Your plant is doing great!");
   }
 
-  // Save last shown hash and time
   localStorage.setItem(
     "lastAlertData",
     JSON.stringify({ hash: currentHash, timestamp: now })
