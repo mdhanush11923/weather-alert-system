@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Thermometer,
   Droplets,
@@ -26,6 +26,8 @@ export default function WeatherPage() {
   const [sensorLoading, setSensorLoading] = useState(true);
   const [sensorError, setSensorError] = useState("");
   const [showAll, setShowAll] = useState(false);
+
+  const hasShownToastRef = useRef(false);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -81,28 +83,32 @@ export default function WeatherPage() {
     // Don't run this effect until sensor loading is complete
     if (sensorLoading) return;
 
-    // If there's a fetch error
+    // Prevent repeat toasts for the same state
+    if (hasShownToastRef.current) return;
+
     if (sensorError) {
       toast.error(`Sensor Error: ${sensorError}`);
+      hasShownToastRef.current = true;
       return;
     }
 
-    // If the backend returns a known 'no data yet' message
     if (sensor?.message === "No sensor data received yet") {
       toast.warning("No sensor data received yet.");
+      hasShownToastRef.current = true;
       return;
     }
 
-    // If sensor data is valid and alerts exist
     if (sensor && alerts.length > 0) {
       alerts.forEach((alert) => {
         toast.error(`${alert}`);
       });
+      hasShownToastRef.current = true;
+      return;
     }
 
-    // If everything is fine and no alerts
     if (sensor && alerts.length === 0) {
       toast.success("Your plant is doing great!");
+      hasShownToastRef.current = true;
     }
   }, [sensorLoading, sensor, alerts, sensorError]);
 
