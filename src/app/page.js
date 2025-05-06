@@ -89,20 +89,20 @@ export default function WeatherPage() {
 
     // If the backend returns a known 'no data yet' message
     if (sensor?.message === "No sensor data received yet") {
-      toast.warning("⚠️ No sensor data received yet.");
+      toast.warning("No sensor data received yet.");
       return;
     }
 
     // If sensor data is valid and alerts exist
     if (sensor && alerts.length > 0) {
       alerts.forEach((alert) => {
-        toast.error(`⚠️ ${alert}`);
+        toast.error(`${alert}`);
       });
     }
 
     // If everything is fine and no alerts
     if (sensor && alerts.length === 0) {
-      toast.success("✅ Your plant is doing great!");
+      toast.success("Your plant is doing great!");
     }
   }, [sensorLoading, sensor, alerts, sensorError]);
 
